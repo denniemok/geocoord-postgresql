@@ -1,0 +1,96 @@
+CREATE TYPE GeoCoord;
+
+CREATE FUNCTION gcoord_in(cstring) RETURNS GeoCoord
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gcoord_out(GeoCoord) RETURNS cstring
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE GeoCoord (
+   internallength = variable,
+   input = gcoord_in,
+   output = gcoord_out,
+   alignment = int
+);
+
+CREATE FUNCTION convert2dms(GeoCoord) RETURNS cstring
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gcoord_eq(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_neq(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_lt(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_le(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_gt(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_ge(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_eqtz(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+CREATE FUNCTION gcoord_neqtz(GeoCoord, GeoCoord) RETURNS bool
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR = (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_eq,
+   commutator = = , negator = <> ,
+   restrict = eqsel, join = eqjoinsel
+);
+CREATE OPERATOR <> (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_neq,
+   commutator = <> , negator = = ,
+   restrict = neqsel, join = neqjoinsel
+);
+CREATE OPERATOR < (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_lt,
+   commutator = > , negator = >= ,
+   restrict = scalarltsel, join = scalarltjoinsel
+);
+CREATE OPERATOR <= (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_le,
+   commutator = >= , negator = > ,
+   restrict = scalarlesel, join = scalarlejoinsel
+);
+CREATE OPERATOR >= (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_ge,
+   commutator = <= , negator = < ,
+   restrict = scalargesel, join = scalargejoinsel
+);
+CREATE OPERATOR > (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_gt,
+   commutator = < , negator = <= ,
+   restrict = scalargtsel, join = scalargtjoinsel
+);
+CREATE OPERATOR ~ (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_eqtz,
+   commutator = ~ , negator = !~ ,
+   restrict = eqsel, join = eqjoinsel
+);
+CREATE OPERATOR !~ (
+   leftarg = GeoCoord, rightarg = GeoCoord, procedure = gcoord_neqtz,
+   commutator = !~ , negator = ~ ,
+   restrict = neqsel, join = neqjoinsel
+);
+
+-- support functions
+CREATE FUNCTION gcoord_s_cmp(GeoCoord, GeoCoord) RETURNS integer
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION gcoord_hash(GeoCoord) RETURNS integer
+   AS '_OBJWD_/gcoord' LANGUAGE C IMMUTABLE STRICT;
+
+CREATE OPERATOR CLASS gcoord_btree_ops
+   DEFAULT FOR TYPE GeoCoord USING btree AS
+      OPERATOR        1       < ,
+      OPERATOR        2       <= ,
+      OPERATOR        3       = ,
+      OPERATOR        4       >= ,
+      OPERATOR        5       > ,
+      FUNCTION        1       gcoord_s_cmp(GeoCoord, GeoCoord);
+
+CREATE OPERATOR CLASS gcoord_hash_ops
+   DEFAULT FOR TYPE GeoCoord USING hash AS
+      OPERATOR        1       = ,
+      FUNCTION        1       gcoord_hash(GeoCoord);
